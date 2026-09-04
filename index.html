@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>ABHI SINGH // UNIT FILE</title>
+
+<!--
+  ============================================================
+  ASSET CHECKLIST — put these files in the SAME folder as this
+  index.html file, using exactly these names:
+
+    intro.jpg   -> the opening splash image
+    bgm.mp3     -> looping background music
+    video.mp4   -> the ~4s "punching through" intro clip
+    wall.jpg    -> a plain concrete/wall photo — slowly zoomed
+                   into after the video, then fogs into the site
+    char.png    -> stylised character art (left side, hero)
+    img2.png    -> second stylised art (right side, skills)
+    imgg.jpg    -> Abhi's normal/real photo
+
+  If a file is missing, that slot shows a small "MISSING:
+  filename" placeholder instead of breaking the page, so you
+  can preview the flow before every asset is ready.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #05070a;
+    --bg-alt: #0a0e15;
+    --panel: rgba(9, 14, 22, 0.72);
+    --panel-border: rgba(77, 238, 234, 0.25);
+    --cyan: #3ee6e0;
+    --cyan-bright: #7bfbf6;
+    --magenta: #ff2a6d;
+    --amber: #ffb200;
+    --text: #d7e9f5;
+    --text-dim: #7d93a6;
+    --gap: clamp(20px, 5vw, 60px);
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html, body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  ::selection{ background: var(--magenta); color: #05070a; }
+
+  h1, h2, h3, .hud-label{
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  .mono{ font-family: 'Share Tech Mono', monospace; }
+
+  a{ color: var(--cyan); }
+
+  img{ max-width: 100%; }
+
+  /* ---------- Ambient background grid + scanlines (main page) ---------- */
+  .ambient-grid{
+    position: fixed; inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(62,230,224,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(62,230,224,0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+    background-position: center;
+    animation: gridDrift 18s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes gridDrift{
+    from{ background-position: 0 0, 0 0; }
+    to{ background-position: 42px 84px, 42px 84px; }
+  }
+  .scanlines{
+    position: fixed; inset:0; z-index: 1;
+    pointer-events:none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.12) 3px
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
+  .vignette{
+    position: fixed; inset:0; z-index:1; pointer-events:none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.75) 100%);
+  }
+
+  /* ============ Missing-image placeholder handling ============ */
+  .art-wrap{ position:relative; }
+  .art-wrap img{ display:block; width:100%; height:100%; }
+  .art-wrap.img-missing img{ display:none; }
+  .art-wrap.img-missing::after{
+    content: attr(data-missing);
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; padding: 12px;
+    font-family:'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--magenta);
+    background: repeating-linear-gradient(45deg, #0b0e13, #0b0e13 10px, #12161d 10px, #12161d 20px);
+    border: 1px dashed rgba(255,42,109,0.5);
+  }
+
+  /* ================= INTRO SCREEN ================= */
+  #intro-screen{
+    position: fixed; inset: 0; z-index: 100;
+    background: #000 url('intro.jpg') center top / cover no-repeat;
+    display:flex; align-items:center; justify-content:center;
+    transition: opacity 0.6s ease;
+  }
+  #intro-screen.fade-out{ opacity: 0; pointer-events:none; }
+  #intro-screen::before{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.8));
+  }
+  #intro-screen.img-missing{ background: #05070a; }
+  #intro-screen.img-missing::before{
+    background: repeating-linear-gradient(45deg, #0b0e13, #0b0e13 12px, #12161d 12px, #12161d 24px);
+  }
+  @media (orientation: portrait) and (max-height: 700px){
+    #intro-screen{ background-position: center 12%; }
+  }
+
+  #enter-btn{
+    position: relative; z-index: 2;
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(0.8rem, 2.6vw, 1.1rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cyan-bright);
+    background: rgba(5,8,12,0.55);
+    border: 1px solid var(--cyan);
+    padding: 15px 26px;
+    cursor: pointer;
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+    box-shadow: 0 0 12px rgba(62,230,224,0.35), inset 0 0 12px rgba(62,230,224,0.08);
+    animation: btnPulse 2.4s ease-in-out infinite;
+    transition: transform 0.2s ease, color 0.2s ease;
+    max-width: 90vw;
+  }
+  #enter-btn:active{ transform: scale(0.97); }
+  #enter-btn:disabled{ opacity:0.5; cursor:not-allowed; animation:none; }
+  @keyframes btnPulse{
+    0%,100%{ box-shadow: 0 0 10px rgba(62,230,224,0.3), inset 0 0 10px rgba(62,230,224,0.06); }
+    50%{ box-shadow: 0 0 22px rgba(62,230,224,0.65), inset 0 0 16px rgba(62,230,224,0.15); }
+  }
+  #enter-btn span.sub{
+    display:block; font-family:'Share Tech Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.2em; color: var(--text-dim); margin-top:4px;
+  }
+
+  /* ================= VIDEO SCREEN ================= */
+  #video-screen{
+    position: fixed; inset:0; z-index: 95;
+    display:none; align-items:center; justify-content:center;
+    background:#000;
+  }
+  #intro-video{ width:100%; height:100%; object-fit:cover; }
+
+  /* ================= WALL ZOOM + FOG TRANSITION ================= */
+  #hole-transition{
+    position: fixed; inset:0; z-index: 90;
+    display:none;
+    background:#000;
+    overflow:hidden;
+    transition: opacity 0.8s ease;
+  }
+  #hole-transition.fade-out{ opacity:0; }
+  .wall-zoom{ position:absolute; inset:0; overflow:hidden; }
+  .wall-zoom img{
+    width:100%; height:100%; object-fit:cover; object-position:center;
+    transform: scale(1);
+    transform-origin: 50% 50%;
+  }
+  .wall-zoom.zooming img{
+    animation: wallZoomAnim 1s ease-in-out forwards;
+  }
+  @keyframes wallZoomAnim{
+    0%{ transform: scale(1); }
+    100%{ transform: scale(1.55); }
+  }
+  .fog-overlay{
+    position:absolute; inset:0;
+    background: radial-gradient(circle at center, rgba(230,232,235,0.92), rgba(200,205,212,0.98) 55%, rgba(240,242,245,1) 100%);
+    opacity: 0;
+    transition: opacity 1.3s ease;
+  }
+  .fog-overlay.show{ opacity: 1; }
+
+  /* ================= MAIN PAGE ================= */
+  #main-page{
+    display:none;
+    position:relative; z-index: 2;
+    opacity: 0;
+    transition: opacity 1s ease;
+    min-height: 100vh;
+  }
+  #main-page.visible{ opacity: 1; }
+
+  .section{
+    position:relative;
+    min-height: 100vh;
+    display:flex; align-items:center;
+    padding: 90px clamp(18px, 6vw, 80px);
+  }
+  .section.compact{ min-height: auto; padding-top: 60px; padding-bottom: 60px; }
+
+  /* --- Top signature bar --- */
+  .topbar{
+    position: fixed; top:0; left:0; right:0; z-index: 10;
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 14px clamp(16px, 5vw, 40px);
+    font-family:'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    color: var(--text-dim);
+    background: linear-gradient(180deg, rgba(5,7,10,0.85), rgba(5,7,10,0));
+    pointer-events:none;
+  }
+  .topbar .dot{ color: var(--cyan); animation: blink 1.6s steps(1) infinite; }
+  @keyframes blink{ 50%{ opacity: 0.2; } }
+
+  /* --- Persistent command deck --- */
+  .command-deck{
+    position:fixed; right:clamp(14px, 3vw, 34px); bottom:clamp(14px, 3vw, 28px);
+    z-index:20; width:min(250px, calc(100vw - 28px));
+    padding:12px; border:1px solid var(--panel-border);
+    background:rgba(5, 8, 13, 0.88); backdrop-filter:blur(12px);
+    box-shadow:0 0 24px rgba(0,0,0,0.35), inset 0 0 20px rgba(62,230,224,0.04);
+    transform:translateY(22px); opacity:0; pointer-events:none;
+    transition:opacity 0.5s ease, transform 0.5s ease;
+  }
+  #main-page.visible .command-deck{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .deck-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .audio-toggle{ border:0; background:transparent; color:var(--cyan); cursor:pointer; font:0.85rem 'Share Tech Mono', monospace; padding:2px 4px; }
+  .audio-toggle:hover, .audio-toggle:focus-visible{ color:var(--cyan-bright); outline:1px solid var(--cyan); }
+  .deck-title{ font-family:'Share Tech Mono', monospace; font-size:0.62rem; letter-spacing:0.16em; color:var(--cyan-bright); }
+  .deck-status{ font-family:'Share Tech Mono', monospace; font-size:0.58rem; color:#4dff9e; }
+  .progress-track{ height:3px; background:rgba(255,255,255,0.12); margin-bottom:11px; }
+  .progress-fill{ width:0%; height:100%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); transition:width 0.15s ease; }
+  .deck-actions{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+  .deck-btn{
+    border:1px solid rgba(62,230,224,0.22); background:rgba(62,230,224,0.06);
+    color:var(--text); padding:8px 5px; cursor:pointer; font:0.62rem 'Share Tech Mono', monospace;
+    letter-spacing:0.08em; transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .deck-btn:hover, .deck-btn:focus-visible{ background:rgba(62,230,224,0.18); color:var(--cyan-bright); border-color:var(--cyan); outline:none; }
+  .deck-select{ width:100%; margin-top:6px; padding:8px 6px; border:1px solid rgba(255,178,0,0.28); background:#0b1017; color:var(--amber); font:0.62rem 'Share Tech Mono', monospace; letter-spacing:0.06em; }
+  @media(max-width:600px){ .command-deck{ right:10px; bottom:10px; width:190px; } .deck-btn{ padding:7px 3px; } }
+
+  .max-wrap{ width:100%; max-width: 1200px; margin: 0 auto; }
+
+  /* --- Hero section (char.png left / text right) --- */
+  .hero-grid{
+    display:grid; grid-template-columns: 1fr; gap: var(--gap);
+    width:100%; max-width: 1200px; margin: 0 auto; align-items:center;
+  }
+  @media(min-width: 820px){ .hero-grid{ grid-template-columns: 0.9fr 1.1fr; } }
+
+  .portrait{
+    position:relative;
+    aspect-ratio: 3/4;
+    border: 1px solid var(--panel-border);
+    background: #0b0f16;
+    overflow:hidden;
+  }
+  .portrait img{ object-fit: cover; object-position: top center; }
+  .portrait::before, .portrait::after{
+    content:""; position:absolute; width:26px; height:26px;
+    border: 2px solid var(--cyan); pointer-events:none;
+  }
+  .portrait::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .portrait::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+  .portrait .tag-tl, .portrait .tag-br{
+    position:absolute; z-index:2;
+    font-family:'Share Tech Mono', monospace; font-size:0.62rem;
+    letter-spacing:0.1em; color: var(--cyan-bright);
+    background: rgba(5,8,12,0.65); padding: 3px 7px;
+  }
+  .portrait .tag-tl{ top:10px; left:10px; }
+  .portrait .tag-br{ bottom:10px; right:10px; text-align:right; }
+
+  .eyebrow{
+    font-family:'Share Tech Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.22em;
+    color: var(--amber);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom: 14px;
+  }
+  .eyebrow::before{ content:""; width:26px; height:1px; background: var(--amber); }
+  .eyebrow.center{ justify-content:center; }
+  .eyebrow.center::before{ display:none; }
+
+  .name-title{
+    font-size: clamp(2.1rem, 6vw, 3.4rem);
+    line-height: 1.05; font-weight: 900; color: var(--text);
+    text-shadow: 0 0 18px rgba(62,230,224,0.35);
+    margin-bottom: 6px;
+  }
+  .name-title em{ font-style: normal; color: var(--cyan-bright); }
+  .role-line{ font-family:'Share Tech Mono', monospace; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 24px; }
+
+  .bio{ font-size: 1.05rem; line-height: 1.65; color: var(--text); max-width: 56ch; margin-bottom: 20px; }
+  .bio:last-of-type{ margin-bottom: 26px; }
+
+  .stat-row{ display:flex; flex-wrap:wrap; gap: 22px; }
+  .stat{ border-left: 2px solid var(--cyan); padding-left: 12px; }
+  .stat .num{ font-family:'Orbitron', sans-serif; font-weight:700; font-size: 1.3rem; color: var(--cyan-bright); }
+  .stat .label{ font-family:'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--text-dim); }
+
+  /* --- Skills section (img2.png right / text left) --- */
+  .skills-grid{
+    display:grid; grid-template-columns: 1fr; gap: var(--gap);
+    width:100%; max-width: 1200px; margin:0 auto; align-items:center;
+  }
+  @media(min-width: 820px){
+    .skills-grid{ grid-template-columns: 1.1fr 0.9fr; }
+    .skills-grid .portrait{ order: 2; }
+  }
+
+  .panel-heading{ font-size: clamp(1.5rem, 4.5vw, 2.3rem); color: var(--text); margin-bottom: 8px; }
+  .panel-sub{ font-family:'Share Tech Mono', monospace; color: var(--text-dim); font-size: 0.82rem; margin-bottom: 30px; }
+
+  .skill{ margin-bottom: 26px; }
+  .skill-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; font-family:'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 0.06em; }
+  .skill-head .pct{ font-family:'Share Tech Mono', monospace; color: var(--cyan-bright); font-size: 0.82rem; }
+  .skill-desc{ color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+  .bar-track{ height: 8px; background: rgba(255,255,255,0.06); clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); overflow:hidden; position:relative; }
+  .bar-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--cyan), var(--cyan-bright)); box-shadow: 0 0 10px rgba(62,230,224,0.6); transition: width 1.4s cubic-bezier(0.2,0.8,0.2,1); }
+  .skill.magenta .bar-fill{ background: linear-gradient(90deg, #b3134a, var(--magenta)); box-shadow:0 0 10px rgba(255,42,109,0.6); }
+  .skill.amber .bar-fill{ background: linear-gradient(90deg, #a6740a, var(--amber)); box-shadow:0 0 10px rgba(255,178,0,0.55); }
+  .in-view .bar-fill{ width: var(--target, 0%); }
+
+  /* --- About / origin --- */
+  .about-wrap{ max-width: 780px; margin: 0 auto; }
+  .about-wrap .bio{ max-width: 70ch; }
+
+  /* --- Timeline (achievements) --- */
+  .timeline{ max-width: 800px; margin: 0 auto; width:100%; }
+  .tl-item{ display:grid; grid-template-columns: 60px 1fr; gap: 18px; padding-bottom: 34px; position:relative; }
+  .tl-item::before{ content:""; position:absolute; left:29px; top: 34px; bottom:-6px; width:1px; background: linear-gradient(var(--cyan), transparent); }
+  .tl-item:last-child::before{ display:none; }
+  .tl-num{
+    font-family:'Orbitron', sans-serif; font-weight:700; font-size: 0.85rem;
+    color: var(--bg); background: var(--cyan);
+    width:46px; height:46px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 14px rgba(62,230,224,0.5);
+  }
+  .tl-content h3{ font-size: 1.05rem; color: var(--text); margin-bottom: 4px; }
+  .tl-content .tl-tag{ font-family:'Share Tech Mono', monospace; font-size:0.68rem; color: var(--amber); letter-spacing:0.1em; margin-bottom:6px; display:block; }
+  .tl-content p{ color: var(--text-dim); font-size:0.92rem; line-height:1.55; max-width: 55ch; }
+
+  /* --- Loadout grid --- */
+  .loadout-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto; width:100%; }
+  .loadout-card{
+    border: 1px solid var(--panel-border); background: var(--panel);
+    padding: 18px 16px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .loadout-card .lc-label{ font-family:'Share Tech Mono', monospace; font-size:0.62rem; color: var(--text-dim); letter-spacing:0.14em; margin-bottom:8px; }
+  .loadout-card .lc-value{ font-family:'Orbitron', sans-serif; font-size: 1rem; color: var(--cyan-bright); }
+
+  /* --- Daily schedule --- */
+  .schedule{ max-width: 720px; margin: 0 auto; width:100%; }
+  .sched-row{
+    display:grid; grid-template-columns: 90px 1fr; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .sched-row .time{ font-family:'Share Tech Mono', monospace; color: var(--cyan-bright); font-size: 0.85rem; }
+  .sched-row .what h4{ font-size: 1rem; color: var(--text); margin-bottom:2px; font-family:'Orbitron', sans-serif; font-weight:500; }
+  .sched-row .what p{ color: var(--text-dim); font-size: 0.85rem; }
+
+  /* --- Fun facts grid --- */
+  .facts-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; max-width: 1100px; margin: 0 auto; width:100%; }
+  .fact-card{ border-left: 2px solid var(--magenta); padding: 6px 0 6px 16px; }
+  .fact-card .fc-num{ font-family:'Share Tech Mono', monospace; color: var(--magenta); font-size: 0.7rem; letter-spacing:0.1em; margin-bottom:6px; display:block; }
+  .fact-card p{ color: var(--text); font-size: 0.95rem; line-height:1.5; }
+
+  /* --- Quote --- */
+  .quote-block{ max-width: 760px; margin: 0 auto; text-align:center; }
+  .quote-block blockquote{
+    font-family:'Orbitron', sans-serif; font-size: clamp(1.2rem, 3.6vw, 1.8rem);
+    line-height:1.4; color: var(--text); position:relative; padding: 0 10px;
+  }
+  .quote-block cite{ display:block; margin-top:18px; font-family:'Share Tech Mono', monospace; font-size:0.8rem; color: var(--text-dim); font-style:normal; }
+
+  /* --- Identity / real photo section --- */
+  .identity-wrap{ width:100%; max-width: 620px; margin: 0 auto; text-align:center; }
+  .id-frame{
+    position:relative;
+    width: min(340px, 82vw);
+    aspect-ratio: 4/5;
+    margin: 0 auto 26px;
+    border: 1px solid var(--panel-border);
+    background:#0b0f16;
+    overflow:hidden;
+    border-radius: 4px;
+  }
+  .id-frame img{
+    width:100%; height:100%;
+    object-fit: contain;
+    object-position: center;
+    filter: contrast(1.05);
+  }
+  .id-frame .scan-sweep{
+    position:absolute; left:0; right:0; height: 40%;
+    background: linear-gradient(180deg, rgba(62,230,224,0), rgba(62,230,224,0.28), rgba(62,230,224,0));
+    animation: sweep 3.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{ 0%{ top:-40%; } 100%{ top:100%; } }
+  .id-status{ font-family:'Share Tech Mono', monospace; color: var(--cyan-bright); font-size:0.85rem; letter-spacing:0.14em; margin-bottom: 16px; }
+  .id-status .ok{ color:#4dff9e; }
+
+  /* --- Footer --- */
+  .footer-section{ min-height: 60vh; flex-direction: column; text-align:center; gap: 18px; }
+  .glitch{ position:relative; font-size: clamp(1.5rem, 6vw, 2.8rem); font-weight:900; letter-spacing: 0.05em; color: var(--text); }
+  .glitch::before, .glitch::after{ content: attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden; clip-path: inset(0 0 0 0); }
+  .glitch::before{ color: var(--magenta); animation: glitchTop 3.4s infinite linear; }
+  .glitch::after{ color: var(--cyan); animation: glitchBot 3.9s infinite linear; }
+  @keyframes glitchTop{
+    0%,92%,100%{ clip-path: inset(0 0 100% 0); transform: translate(0,0); }
+    93%{ clip-path: inset(0 0 60% 0); transform: translate(-2px,-1px); }
+    95%{ clip-path: inset(30% 0 30% 0); transform: translate(2px,1px); }
+    97%{ clip-path: inset(70% 0 0 0); transform: translate(-1px,1px); }
+  }
+  @keyframes glitchBot{
+    0%,90%,100%{ clip-path: inset(100% 0 0 0); transform: translate(0,0); }
+    91%{ clip-path: inset(50% 0 10% 0); transform: translate(2px,0); }
+    94%{ clip-path: inset(10% 0 60% 0); transform: translate(-2px,1px); }
+    96%{ clip-path: inset(0 0 80% 0); transform: translate(1px,-1px); }
+  }
+  .footer-note{ font-family:'Share Tech Mono', monospace; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.1em; }
+
+  /* reveal on scroll */
+  .reveal{ opacity: 0; transform: translateY(24px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .reveal.in-view{ opacity:1; transform: translateY(0); }
+
+  @media (max-width: 600px){
+    .section{ padding: 70px 18px; }
+    #hero{
+      min-height: auto;
+      align-items: flex-start;
+      padding-top: 82px;
+      padding-bottom: 64px;
+    }
+    #hero .hero-grid{
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 10px;
+      align-items: start;
+    }
+    #hero .hero-copy{ display: contents; }
+    #hero .hero-name-block{
+      grid-column: 2;
+      align-self: center;
+    }
+    #hero .hero-details{
+      grid-column: 1 / -1;
+    }
+    #hero .portrait{
+      width: auto;
+      aspect-ratio: 2 / 3;
+      margin: 0;
+      border: none;
+      background: transparent;
+    }
+    #hero .portrait img{ object-fit: contain; }
+    #hero .portrait::before,
+    #hero .portrait::after{ display: none; }
+    #hero .portrait .tag-tl,
+    #hero .portrait .tag-br{ font-size: 0.5rem; padding: 2px 4px; }
+    #hero .hero-name-block,
+    #hero .hero-details{ min-width: 0; }
+    #hero .eyebrow{ font-size: 0.55rem; letter-spacing: 0.12em; gap: 5px; margin-bottom: 8px; }
+    #hero .eyebrow::before{ width: 14px; }
+    #hero .name-title{ font-size: clamp(1.45rem, 7vw, 2.2rem); line-height: 1.08; }
+    #hero .role-line{ font-size: 0.58rem; line-height: 1.4; margin-bottom: 12px; }
+    #hero .bio{ font-size: 0.78rem; line-height: 1.4; margin-bottom: 12px; }
+    #hero .bio:last-of-type{ margin-bottom: 16px; }
+    #hero .stat-row{ gap: 10px; }
+    #hero .stat{ padding-left: 7px; }
+    #hero .stat .num{ font-size: 0.85rem; }
+    #hero .stat .label{ font-size: 0.45rem; letter-spacing: 0.08em; }
+    .tl-item{ grid-template-columns: 46px 1fr; gap: 12px; }
+    .tl-num{ width:38px; height:38px; font-size:0.75rem; }
+    .tl-item::before{ left:23px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= INTRO ================= -->
+<div id="intro-screen">
+  <button id="enter-btn" type="button">
+    Enter Abhi's World
+    <span class="sub">// initiate sequence</span>
+  </button>
+</div>
+
+<!-- ================= VIDEO ================= -->
+<div id="video-screen">
+  <video id="intro-video" src="video.mp4" playsinline></video>
+</div>
+
+<!-- ================= WALL ZOOM + FOG TRANSITION ================= -->
+<div id="hole-transition">
+  <div class="wall-zoom art-wrap" id="wall-zoom" data-missing="MISSING: wall.jpg">
+    <img id="wall-img" src="wall.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+  </div>
+  <div class="fog-overlay" id="fog-overlay"></div>
+</div>
+
+<!-- ================= MAIN PAGE ================= -->
+<div class="ambient-grid"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <span>ABHI.SYS <span class="dot">●</span> ONLINE</span>
+  <span>FILE 07 // CLASS X</span>
+</div>
+
+<div id="main-page">
+
+  <aside class="command-deck" aria-label="Mission control">
+    <div class="deck-top"><span class="deck-title">MISSION CONTROL</span><span><button class="audio-toggle" id="audio-toggle" type="button" aria-label="Mute background audio">♫</button><span class="deck-status" id="deck-status">ONLINE</span></span></div>
+    <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="deck-actions">
+      <button class="deck-btn" id="prev-btn" type="button">&larr; PREV</button>
+      <button class="deck-btn" id="top-btn" type="button">TOP</button>
+      <button class="deck-btn" id="next-btn" type="button">NEXT &rarr;</button>
+    </div>
+    <select class="deck-select" id="section-select" aria-label="Jump to section">
+      <option value="hero">01 // PERSONNEL</option>
+      <option value="about">02 // ORIGIN</option>
+      <option value="skills">03 // ARENAS</option>
+      <option value="timeline">04 // MISSION LOG</option>
+      <option value="loadout">05 // LOADOUT</option>
+      <option value="schedule">06 // DAILY CYCLE</option>
+      <option value="identity">07 // IDENTITY</option>
+      <option value="facts">08 // EXTRA DATA</option>
+      <option value="quote">09 // MOTTO</option>
+    </select>
+  </aside>
+
+  <!-- HERO -->
+  <section class="section" id="hero">
+    <div class="hero-grid">
+      <div class="art-wrap portrait" data-missing="MISSING: char.png">
+        <span class="tag-tl mono">UNIT.01</span>
+        <img src="char.png" alt="Abhi Singh character art" onerror="this.parentElement.classList.add('img-missing')">
+        <span class="tag-br mono">LOCK&nbsp;✓</span>
+      </div>
+
+      <div class="hero-copy">
+        <div class="hero-name-block reveal">
+        <div class="eyebrow">Personnel File</div>
+        <h1 class="name-title">ABHI <em>SINGH</em></h1>
+        </div>
+        <div class="hero-details reveal">
+        <div class="role-line mono">STUDENT // CLASS X &mdash; SPIKER &middot; STRIKER &middot; SURVIVOR</div>
+        <div class="role-line mono" style="color:var(--cyan); margin-top:-14px;">ORIGIN // KHARAN, CHANDAULI, U.P.</div>
+        <p class="bio">
+          Grade 10, and already running three lives at once — one on the volleyball
+          court, one at the cricket crease, and one dropping into the Free Fire
+          zone with a squad that trusts him to make the last call.
+        </p>
+        <p class="bio">
+          Same guy, three battlefields, one operating system underneath it all:
+          show up, read the game, close it out. Mornings belong to school,
+          evenings belong to whichever arena is calling loudest that day.
+        </p>
+        <div class="stat-row">
+          <div class="stat"><div class="num">10th</div><div class="label">GRADE</div></div>
+          <div class="stat"><div class="num">3</div><div class="label">ACTIVE ARENAS</div></div>
+          <div class="stat"><div class="num">ACTIVE</div><div class="label">STATUS</div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section compact" id="about">
+    <div class="about-wrap reveal">
+      <div class="eyebrow">Origin File</div>
+      <h2 class="panel-heading">Who Is Abhi, Really?</h2>
+      <p class="bio">
+        Abhi's the kind of teammate who's louder in the huddle than he is
+        anywhere else — quiet in class, locked-in on the court, fully
+        unfiltered the second a match goes into overtime. Class 10 has
+        meant longer school days and shorter windows for everything he
+        actually loves, so he's gotten good at making every practice
+        session and every squad match count.
+      </p>
+      <p class="bio">
+        Ask anyone who's played with him and you'll hear the same thing:
+        he doesn't panic. Whether that's a tight cricket run-chase, a
+        deciding volleyball set, or the final circle in Free Fire, his
+        instinct is to slow the moment down instead of speeding up with
+        it — which is usually why he's still standing at the end.
+      </p>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="section" id="skills">
+    <div class="skills-grid">
+      <div class="reveal">
+        <div class="eyebrow">Field Operations</div>
+        <h2 class="panel-heading">Three Arenas, One Player</h2>
+        <div class="panel-sub mono">// scroll-triggered readouts</div>
+
+        <div class="skill" style="--target:88%">
+          <div class="skill-head"><span>VOLLEYBALL</span><span class="pct mono">88%</span></div>
+          <div class="skill-desc">Reads the set before it's even thrown. Lives for the spike.</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+
+        <div class="skill magenta" style="--target:80%">
+          <div class="skill-head"><span>CRICKET</span><span class="pct mono">80%</span></div>
+          <div class="skill-desc">Calm under pressure at the crease, sharper in the field.</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+
+        <div class="skill amber" style="--target:92%">
+          <div class="skill-head"><span>FREE FIRE</span><span class="pct mono">92%</span></div>
+          <div class="skill-desc">Squad shot-caller. Last one standing more often than not.</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="art-wrap portrait" data-missing="MISSING: img2.png">
+        <span class="tag-tl mono">UNIT.02</span>
+        <img src="img2.png" alt="Abhi Singh second art" onerror="this.parentElement.classList.add('img-missing')">
+        <span class="tag-br mono">SYNC&nbsp;✓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE / ACHIEVEMENTS -->
+  <section class="section compact" id="timeline">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Mission Log</div>
+      <h2 class="panel-heading reveal">Milestones So Far</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:40px;">// a running log, still being written</div>
+
+      <div class="timeline">
+        <div class="tl-item reveal">
+          <div class="tl-num">01</div>
+          <div class="tl-content">
+            <span class="tl-tag">EARLY DAYS</span>
+            <h3>Picked Up His First Bat &amp; Ball</h3>
+            <p>Started the way most players do — messing around in the
+            neighbourhood before it turned into something serious.</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">02</div>
+          <div class="tl-content">
+            <span class="tl-tag">SCHOOL TEAM</span>
+            <h3>Joined the School Volleyball Squad</h3>
+            <p>Found his rhythm at the net and never really left it —
+            practice became the best part of the school day.</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">03</div>
+          <div class="tl-content">
+            <span class="tl-tag">RANKED UP</span>
+            <h3>Went Competitive in Free Fire</h3>
+            <p>Turned casual matches with friends into a real squad
+            grind — ranked pushes, custom rooms, the whole routine.</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">04</div>
+          <div class="tl-content">
+            <span class="tl-tag">RIGHT NOW</span>
+            <h3>Class 10 — Juggling It All</h3>
+            <p>Balancing boards prep with match schedules and squad
+            timings, and somehow still showing up for both.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADOUT -->
+  <section class="section compact" id="loadout">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Inventory</div>
+      <h2 class="panel-heading reveal">Current Loadout</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:26px;">// gear check before drop-in</div>
+      <div class="loadout-grid reveal">
+        <div class="loadout-card"><div class="lc-label">POSITION</div><div class="lc-value">Spiker</div></div>
+        <div class="loadout-card"><div class="lc-label">CRICKET ROLE</div><div class="lc-value">All-Rounder</div></div>
+        <div class="loadout-card"><div class="lc-label">FF ROLE</div><div class="lc-value">IGL / Rusher</div></div>
+        <div class="loadout-card"><div class="lc-label">PLAYSTYLE</div><div class="lc-value">Calm &amp; Calculated</div></div>
+        <div class="loadout-card"><div class="lc-label">GRADE</div><div class="lc-value">10th</div></div>
+        <div class="loadout-card"><div class="lc-label">MINDSET</div><div class="lc-value">Never Tilts</div></div>
+        <div class="loadout-card"><div class="lc-label">HOME BASE</div><div class="lc-value">Kharan, Chandauli</div></div>
+        <div class="loadout-card"><div class="lc-label">CLUB AFFILIATION</div><div class="lc-value">Baba Sports Club</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAILY SCHEDULE -->
+  <section class="section compact" id="schedule">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Daily Cycle</div>
+      <h2 class="panel-heading reveal">A Typical Day</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:20px;">// system uptime log</div>
+      <div class="schedule reveal">
+        <div class="sched-row">
+          <div class="time mono">07:00</div>
+          <div class="what"><h4>School Starts</h4><p>Class 10 classes — the grind everyone has to run first.</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">15:30</div>
+          <div class="what"><h4>Homework Window</h4><p>Quick turnaround before the evening squad calls start.</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">17:00</div>
+          <div class="what"><h4>Practice Block</h4><p>Volleyball or cricket practice, depending on the season.</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">20:00</div>
+          <div class="what"><h4>Squad Time</h4><p>Ranked matches or scrims with the squad, headset on.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IDENTITY / REAL PHOTO -->
+  <section class="section" id="identity">
+    <div class="identity-wrap reveal">
+      <div class="eyebrow center">Visual Confirmation</div>
+      <div class="id-frame art-wrap" data-missing="MISSING: imgg.jpg">
+        <img src="imgg.jpg" alt="Abhi Singh real photo" onerror="this.parentElement.classList.add('img-missing')">
+        <div class="scan-sweep"></div>
+      </div>
+      <div class="id-status">IDENTITY MATCH: <span class="ok">CONFIRMED</span></div>
+      <p class="bio" style="margin:0 auto; text-align:center;">
+        Behind the HUD and the highlight reels — this is Abhi, off duty.
+      </p>
+    </div>
+  </section>
+
+  <!-- FUN FACTS -->
+  <section class="section compact" id="facts">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Extra Data</div>
+      <h2 class="panel-heading reveal">Random Facts</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:26px;">// things that didn't fit anywhere else</div>
+      <div class="facts-grid reveal">
+        <div class="fact-card"><span class="fc-num">01</span><p>Never skips a warm-up before volleyball practice — learned that lesson the hard way.</p></div>
+        <div class="fact-card"><span class="fc-num">02</span><p>Prefers batting under pressure over batting when the game's already won.</p></div>
+        <div class="fact-card"><span class="fc-num">03</span><p>Trusts his squad's calls in Free Fire more than his own solo instincts.</p></div>
+        <div class="fact-card"><span class="fc-num">04</span><p>Stays weirdly calm right before a big match — it's the waiting after that gets him.</p></div>
+        <div class="fact-card"><span class="fc-num">05</span><p>Somehow still finds time to finish homework between practice and squad time.</p></div>
+        <div class="fact-card"><span class="fc-num">06</span><p>Takes every loss as data, not a disaster — reviews it, moves on.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="section compact" id="quote">
+    <div class="quote-block reveal">
+      <div class="eyebrow center">Personal Motto</div>
+      <blockquote>"Read the game. Trust the squad. Close it out."</blockquote>
+      <cite>— Abhi Singh</cite>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section class="section footer-section">
+    <div class="glitch" data-text="END OF FILE">END OF FILE</div>
+    <div class="footer-note">SYSTEM: ABHI.EXE &mdash; RUNNING &mdash; ALL SECTORS CLEAR</div>
+  </section>
+
+</div>
+
+<audio id="bgm" src="bgm.mp3" preload="auto"></audio>
+
+<script>
+(function(){
+  var enterBtn = document.getElementById('enter-btn');
+  var introScreen = document.getElementById('intro-screen');
+  var videoScreen = document.getElementById('video-screen');
+  var introVideo = document.getElementById('intro-video');
+  var holeTransition = document.getElementById('hole-transition');
+  var wallZoom = document.getElementById('wall-zoom');
+  var fogOverlay = document.getElementById('fog-overlay');
+  var mainPage = document.getElementById('main-page');
+  var bgm = document.getElementById('bgm');
+  var sectionIds = ['hero', 'about', 'skills', 'timeline', 'loadout', 'schedule', 'identity', 'facts', 'quote'];
+  var sectionSelect = document.getElementById('section-select');
+  var progressFill = document.getElementById('progress-fill');
+  var deckStatus = document.getElementById('deck-status');
+  var audioToggle = document.getElementById('audio-toggle');
+
+  (function checkIntroImage(){
+    var testImg = new Image();
+    testImg.onerror = function(){ introScreen.classList.add('img-missing'); };
+    testImg.src = 'intro.jpg';
+  })();
+
+  var started = false;
+
+  function goFullscreen(){
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (req) { try { req.call(el).catch(function(){}); } catch(e){} }
+  }
+
+  function startBGM(){
+    bgm.loop = true;
+    bgm.volume = 0.55;
+    var p = bgm.play();
+    if (p && p.catch) p.catch(function(){});
+  }
+
+  function showVideo(){
+    introScreen.style.display = 'none';
+    videoScreen.style.display = 'flex';
+    introVideo.currentTime = 0;
+    var p = introVideo.play();
+    if (p && p.catch) {
+      p.catch(function(){
+        introVideo.muted = true;
+        introVideo.play().catch(function(){});
+      });
+    }
+  }
+
+  function showWall(){
+    videoScreen.style.display = 'none';
+    holeTransition.style.display = 'block';
+    // trigger the 1s zoom
+    void wallZoom.offsetWidth; // force reflow so the animation restarts cleanly
+    wallZoom.classList.add('zooming');
+
+    // after the 1s zoom, bring in the fog
+    setTimeout(function(){
+      fogOverlay.classList.add('show');
+    }, 1000);
+
+    // once fog has mostly covered the screen, swap in the main page underneath
+    setTimeout(function(){
+      revealMain();
+      holeTransition.classList.add('fade-out');
+      setTimeout(function(){
+        holeTransition.style.display = 'none';
+      }, 800);
+    }, 2300);
+  }
+
+  function revealMain(){
+    mainPage.style.display = 'block';
+    requestAnimationFrame(function(){ mainPage.classList.add('visible'); });
+    initScrollReveal();
+    updateDeck();
+  }
+
+  function scrollToSection(id){
+    var target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function updateDeck(){
+    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    var percent = maxScroll > 0 ? Math.round((window.scrollY / maxScroll) * 100) : 0;
+    progressFill.style.width = Math.min(100, percent) + '%';
+    deckStatus.textContent = 'ONLINE // ' + String(percent).padStart(2, '0') + '%';
+    var current = sectionIds[0];
+    sectionIds.forEach(function(id){
+      var section = document.getElementById(id);
+      if (section && section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = id;
+    });
+    sectionSelect.value = current;
+  }
+
+  function moveSection(direction){
+    var currentIndex = sectionIds.indexOf(sectionSelect.value);
+    var nextIndex = Math.max(0, Math.min(sectionIds.length - 1, currentIndex + direction));
+    sectionSelect.value = sectionIds[nextIndex];
+    scrollToSection(sectionIds[nextIndex]);
+  }
+
+  sectionSelect.addEventListener('change', function(){ scrollToSection(sectionSelect.value); });
+  document.getElementById('prev-btn').addEventListener('click', function(){ moveSection(-1); });
+  document.getElementById('next-btn').addEventListener('click', function(){ moveSection(1); });
+  document.getElementById('top-btn').addEventListener('click', function(){ scrollToSection('hero'); });
+  audioToggle.addEventListener('click', function(){
+    bgm.muted = !bgm.muted;
+    audioToggle.textContent = bgm.muted ? '♫̸' : '♫';
+    audioToggle.setAttribute('aria-label', bgm.muted ? 'Unmute background audio' : 'Mute background audio');
+  });
+  window.addEventListener('scroll', updateDeck, { passive:true });
+
+  enterBtn.addEventListener('click', function(){
+    if (started) return;
+    started = true;
+    enterBtn.disabled = true;
+
+    goFullscreen();
+    setTimeout(startBGM, 8000);
+
+    setTimeout(function(){
+      introScreen.classList.add('fade-out');
+      setTimeout(showVideo, 600);
+    }, 1000);
+  });
+
+  introVideo.addEventListener('ended', showWall);
+  introVideo.addEventListener('error', function(){ setTimeout(showWall, 400); });
+
+  function initScrollReveal(){
+    var targets = document.querySelectorAll('.reveal, .skill');
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) entry.target.classList.add('in-view');
+      });
+    }, { threshold: 0.3 });
+    targets.forEach(function(t){ io.observe(t); });
+  }
+})();
+</script>
+
+</body>
+</html>
