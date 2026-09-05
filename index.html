@@ -446,4 +446,493 @@
     95%{ clip-path: inset(30% 0 30% 0); transform: translate(2px,1px); }
     97%{ clip-path: inset(70% 0 0 0); transform: translate(-1px,1px); }
   }
-  @keyframe
+  @keyframes glitchBot{
+    0%,90%,100%{ clip-path: inset(100% 0 0 0); transform: translate(0,0); }
+    91%{ clip-path: inset(50% 0 10% 0); transform: translate(2px,0); }
+    94%{ clip-path: inset(10% 0 60% 0); transform: translate(-2px,1px); }
+    96%{ clip-path: inset(0 0 80% 0); transform: translate(1px,-1px); }
+  }
+  .footer-note{ font-family:'Share Tech Mono', monospace; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.1em; }
+
+  /* reveal on scroll */
+  .reveal{ opacity: 0; transform: translateY(24px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .reveal.in-view{ opacity:1; transform: translateY(0); }
+
+  @media (max-width: 600px){
+    .section{ padding: 70px 18px; }
+    #hero{
+      min-height: auto;
+      align-items: flex-start;
+      padding-top: 82px;
+      padding-bottom: 64px;
+    }
+    #hero .hero-grid{
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 10px;
+      align-items: start;
+    }
+    #hero .hero-copy{ display: contents; }
+    #hero .hero-name-block{
+      grid-column: 2;
+      align-self: center;
+    }
+    #hero .hero-details{
+      grid-column: 1 / -1;
+    }
+    #hero .portrait{
+      width: auto;
+      aspect-ratio: 2 / 3;
+      margin: 0;
+      border: none;
+      background: transparent;
+    }
+    #hero .portrait img{ object-fit: contain; }
+    #hero .portrait::before,
+    #hero .portrait::after{ display: none; }
+    #hero .portrait .tag-tl,
+    #hero .portrait .tag-br{ font-size: 0.5rem; padding: 2px 4px; }
+    #hero .hero-name-block,
+    #hero .hero-details{ min-width: 0; }
+    #hero .eyebrow{ font-size: 0.55rem; letter-spacing: 0.12em; gap: 5px; margin-bottom: 8px; }
+    #hero .eyebrow::before{ width: 14px; }
+    #hero .name-title{ font-size: clamp(1.45rem, 7vw, 2.2rem); line-height: 1.08; }
+    #hero .role-line{ font-size: 0.58rem; line-height: 1.4; margin-bottom: 12px; }
+    #hero .bio{ font-size: 0.78rem; line-height: 1.4; margin-bottom: 12px; }
+    #hero .bio:last-of-type{ margin-bottom: 16px; }
+    #hero .stat-row{ gap: 10px; }
+    #hero .stat{ padding-left: 7px; }
+    #hero .stat .num{ font-size: 0.85rem; }
+    #hero .stat .label{ font-size: 0.45rem; letter-spacing: 0.08em; }
+    .tl-item{ grid-template-columns: 46px 1fr; gap: 12px; }
+    .tl-num{ width:38px; height:38px; font-size:0.75rem; }
+    .tl-item::before{ left:23px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= INTRO ================= -->
+<div id="intro-screen">
+  <button id="enter-btn" type="button">
+    अंदर आओ
+    <span class="sub">// अबही की दुनिया शुरू होती है</span>
+  </button>
+</div>
+
+<!-- ================= VIDEO ================= -->
+<div id="video-screen">
+  <video id="intro-video" src="video.mp4" playsinline></video>
+</div>
+
+<!-- ================= WALL ZOOM + FOG TRANSITION ================= -->
+<div id="hole-transition">
+  <div class="wall-zoom art-wrap" id="wall-zoom" data-missing="MISSING: wall.jpg">
+    <img id="wall-img" src="wall.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+  </div>
+  <div class="fog-overlay" id="fog-overlay"></div>
+</div>
+
+<!-- ================= MAIN PAGE ================= -->
+<div class="ambient-grid"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <span>ABHI.SYS <span class="dot">●</span> ONLINE</span>
+  <span>FILE 07 // CLASS X</span>
+</div>
+
+<div id="main-page">
+
+  <aside class="command-deck" aria-label="Mission control">
+    <div class="deck-top"><span class="deck-title">MISSION CONTROL</span><span><button class="audio-toggle" id="audio-toggle" type="button" aria-label="Mute background audio">♫</button><span class="deck-status" id="deck-status">ONLINE</span></span></div>
+    <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="deck-actions">
+      <button class="deck-btn" id="prev-btn" type="button">&larr; PREV</button>
+      <button class="deck-btn" id="top-btn" type="button">TOP</button>
+      <button class="deck-btn" id="next-btn" type="button">NEXT &rarr;</button>
+    </div>
+    <select class="deck-select" id="section-select" aria-label="Jump to section">
+      <option value="hero">01 // PERSONNEL</option>
+      <option value="about">02 // ORIGIN</option>
+      <option value="skills">03 // ARENAS</option>
+      <option value="timeline">04 // MISSION LOG</option>
+      <option value="loadout">05 // LOADOUT</option>
+      <option value="schedule">06 // DAILY CYCLE</option>
+      <option value="identity">07 // IDENTITY</option>
+      <option value="facts">08 // EXTRA DATA</option>
+      <option value="quote">09 // MOTTO</option>
+    </select>
+  </aside>
+
+  <!-- HERO -->
+  <section class="section" id="hero">
+    <div class="hero-grid">
+      <div class="art-wrap portrait" data-missing="MISSING: char.png">
+        <span class="tag-tl mono">UNIT.01</span>
+        <img src="char.png" alt="Abhi Singh character art" onerror="this.parentElement.classList.add('img-missing')">
+        <span class="tag-br mono">LOCK&nbsp;✓</span>
+      </div>
+
+      <div class="hero-copy">
+        <div class="hero-name-block reveal">
+        <div class="eyebrow">Personnel File</div>
+        <h1 class="name-title">ABHI <em>SINGH</em></h1>
+        </div>
+        <div class="hero-details reveal">
+        <div class="role-line mono">CLASS 10 // SPIKER · STRIKER · SURVIVOR</div>
+        <div class="role-line mono" style="color:var(--cyan); margin-top:-14px;">ORIGIN // खारन, चंदौली, यूपी</div>
+        <p class="bio">
+          दसवीं का छात्र, लेकिन तीन मैदानों पर एक साथ खेलता है — वॉलीबॉल कोर्ट, क्रिकेट का पिच, और फ्री फायर का ज़ोन।
+        </p>
+        <p class="bio">
+          सुबह स्कूल, शाम को जो मैदान बुलाए वहाँ। गेम पढ़ना, सही फैसला लेना, और अंत तक टिके रहना — यही तरीका है।
+        </p>
+        <div class="stat-row">
+          <div class="stat"><div class="num">10th</div><div class="label">GRADE</div></div>
+          <div class="stat"><div class="num">3</div><div class="label">ACTIVE ARENAS</div></div>
+          <div class="stat"><div class="num">ACTIVE</div><div class="label">STATUS</div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section compact" id="about">
+    <div class="about-wrap reveal">
+      <div class="eyebrow">Origin File</div>
+      <h2 class="panel-heading">अबही असल में कैसा है?</h2>
+      <p class="bio">
+        क्लास में चुप रहता है, कोर्ट पर फोकस्ड, और जब मैच टाइट हो जाए तो सबसे साफ दिमाग वाला। दसवीं में पढ़ाई का प्रेशर बढ़ा है, इसलिए प्रैक्टिस और स्क्वॉड मैच दोनों को काम की तरह लेता है।
+      </p>
+      <p class="bio">
+        साथ खेलने वाले एक ही बात कहते हैं — ये घबराता नहीं। चाहे क्रिकेट में tight chase हो, वॉलीबॉल का deciding set हो, या फ्री फायर का last circle — ये पल को धीमा करके खेलता है। इसलिए अक्सर आखिर में खड़ा रहता है।
+      </p>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="section" id="skills">
+    <div class="skills-grid">
+      <div class="reveal">
+        <div class="eyebrow">Field Operations</div>
+        <h2 class="panel-heading">तीन मैदान, एक खिलाड़ी</h2>
+        <div class="panel-sub mono">// scroll-triggered readouts</div>
+
+        <div class="skill" style="--target:88%">
+          <div class="skill-head"><span>VOLLEYBALL</span><span class="pct mono">88%</span></div>
+          <div class="skill-desc">सेट आने से पहले ही समझ लेता है। स्पाइक के लिए बना है।</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+
+        <div class="skill magenta" style="--target:80%">
+          <div class="skill-head"><span>CRICKET</span><span class="pct mono">80%</span></div>
+          <div class="skill-desc">क्रीज़ पर शांत, फील्डिंग में तेज़।</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+
+        <div class="skill amber" style="--target:92%">
+          <div class="skill-head"><span>FREE FIRE</span><span class="pct mono">92%</span></div>
+          <div class="skill-desc">स्क्वॉड का शॉट-कॉलर। अक्सर लास्ट तक बच जाता है।</div>
+          <div class="bar-track"><div class="bar-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="art-wrap portrait" data-missing="MISSING: img2.png">
+        <span class="tag-tl mono">UNIT.02</span>
+        <img src="img2.png" alt="Abhi Singh second art" onerror="this.parentElement.classList.add('img-missing')">
+        <span class="tag-br mono">SYNC&nbsp;✓</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE / ACHIEVEMENTS -->
+  <section class="section compact" id="timeline">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Mission Log</div>
+      <h2 class="panel-heading reveal">अभी तक का सफर</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:40px;">// अभी भी लिखा जा रहा है</div>
+
+      <div class="timeline">
+        <div class="tl-item reveal">
+          <div class="tl-num">01</div>
+          <div class="tl-content">
+            <span class="tl-tag">शुरुआत</span>
+            <h3>पहली बैट और बॉल</h3>
+            <p>मोहल्ले में खेलते-खेलते शुरू हुआ। फिर धीरे-धीरे सीरियस हो गया।</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">02</div>
+          <div class="tl-content">
+            <span class="tl-tag">स्कूल टीम</span>
+            <h3>स्कूल वॉलीबॉल स्क्वॉड में शामिल</h3>
+            <p>नेट पर अपनी जगह बनाई। प्रैक्टिस दिन का सबसे अच्छा हिस्सा बन गया।</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">03</div>
+          <div class="tl-content">
+            <span class="tl-tag">रैंक अप</span>
+            <h3>फ्री फायर में कॉम्पिटिटिव जाना</h3>
+            <p>दोस्तों के साथ कैज़ुअल से निकलकर रैंक पुश और कस्टम रूम शुरू किए।</p>
+          </div>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-num">04</div>
+          <div class="tl-content">
+            <span class="tl-tag">अभी</span>
+            <h3>दसवीं — सब संभालना</h3>
+            <p>बोर्ड की तैयारी, मैच और स्क्वॉड टाइमिंग, तीनों को मैनेज कर रहा है।</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADOUT -->
+  <section class="section compact" id="loadout">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Inventory</div>
+      <h2 class="panel-heading reveal">करंट लोडआउट</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:26px;">// ड्रॉप से पहले चेक</div>
+      <div class="loadout-grid reveal">
+        <div class="loadout-card"><div class="lc-label">POSITION</div><div class="lc-value">Spiker</div></div>
+        <div class="loadout-card"><div class="lc-label">CRICKET ROLE</div><div class="lc-value">All-Rounder</div></div>
+        <div class="loadout-card"><div class="lc-label">FF ROLE</div><div class="lc-value">IGL / Rusher</div></div>
+        <div class="loadout-card"><div class="lc-label">PLAYSTYLE</div><div class="lc-value">Calm & Calculated</div></div>
+        <div class="loadout-card"><div class="lc-label">GRADE</div><div class="lc-value">10th</div></div>
+        <div class="loadout-card"><div class="lc-label">MINDSET</div><div class="lc-value">Never Tilts</div></div>
+        <div class="loadout-card"><div class="lc-label">HOME BASE</div><div class="lc-value">खारन, चंदौली</div></div>
+        <div class="loadout-card"><div class="lc-label">CLUB</div><div class="lc-value">बाबा स्पोर्ट्स क्लब</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAILY SCHEDULE -->
+  <section class="section compact" id="schedule">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Daily Cycle</div>
+      <h2 class="panel-heading reveal">एक सामान्य दिन</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:20px;">// सिस्टम अपटाइम</div>
+      <div class="schedule reveal">
+        <div class="sched-row">
+          <div class="time mono">07:00</div>
+          <div class="what"><h4>स्कूल</h4><p>दसवीं की क्लासेस — पहले ये पूरा करना है।</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">15:30</div>
+          <div class="what"><h4>होमवर्क</h4><p>शाम के प्रैक्टिस से पहले जल्दी निपटाना।</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">17:00</div>
+          <div class="what"><h4>प्रैक्टिस</h4><p>वॉलीबॉल या क्रिकेट — सीजन के हिसाब से।</p></div>
+        </div>
+        <div class="sched-row">
+          <div class="time mono">20:00</div>
+          <div class="what"><h4>स्क्वॉड टाइम</h4><p>रैंक मैच या स्क्रिम। हेडसेट ऑन।</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IDENTITY / REAL PHOTO -->
+  <section class="section" id="identity">
+    <div class="identity-wrap reveal">
+      <div class="eyebrow center">Visual Confirmation</div>
+      <div class="id-frame art-wrap" data-missing="MISSING: imgg.jpg">
+        <img src="imgg.jpg" alt="Abhi Singh real photo" onerror="this.parentElement.classList.add('img-missing')">
+        <div class="scan-sweep"></div>
+      </div>
+      <div class="id-status">IDENTITY MATCH: <span class="ok">CONFIRMED</span></div>
+      <p class="bio" style="margin:0 auto; text-align:center;">
+        हाइलाइट्स और HUD के पीछे — यही असली अबही है।
+      </p>
+    </div>
+  </section>
+
+  <!-- FUN FACTS -->
+  <section class="section compact" id="facts">
+    <div class="max-wrap">
+      <div class="eyebrow reveal">Extra Data</div>
+      <h2 class="panel-heading reveal">कुछ और बातें</h2>
+      <div class="panel-sub mono reveal" style="margin-bottom:26px;">// जो कहीं और नहीं फिट हुईं</div>
+      <div class="facts-grid reveal">
+        <div class="fact-card"><span class="fc-num">01</span><p>वॉलीबॉल प्रैक्टिस से पहले वार्म-अप कभी नहीं छोड़ता — एक बार सबक सीख लिया था।</p></div>
+        <div class="fact-card"><span class="fc-num">02</span><p>प्रेशर वाले मैच में बैटिंग ज्यादा पसंद है, आसान गेम में नहीं।</p></div>
+        <div class="fact-card"><span class="fc-num">03</span><p>फ्री फायर में स्क्वॉड की कॉल पर ज्यादा भरोसा करता है।</p></div>
+        <div class="fact-card"><span class="fc-num">04</span><p>बड़े मैच से पहले शांत रहता है। इंतज़ार के दौरान थोड़ा बेचैन हो जाता है।</p></div>
+        <div class="fact-card"><span class="fc-num">05</span><p>प्रैक्टिस और स्क्वॉड के बीच होमवर्क भी निपटा लेता है।</p></div>
+        <div class="fact-card"><span class="fc-num">06</span><p>हार को डेटा मानता है, ड्रामा नहीं। देखता है, सीखता है, आगे बढ़ता है।</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="section compact" id="quote">
+    <div class="quote-block reveal">
+      <div class="eyebrow center">Personal Motto</div>
+      <blockquote>"गेम पढ़ो। स्क्वॉड पर भरोसा रखो। आखिर तक खेलो।"</blockquote>
+      <cite>— Abhi Singh</cite>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section class="section footer-section">
+    <div class="glitch" data-text="END OF FILE">END OF FILE</div>
+    <div class="footer-note">SYSTEM: ABHI.EXE — RUNNING — ALL SECTORS CLEAR</div>
+  </section>
+
+</div>
+
+<audio id="bgm" src="bgm.mp3" preload="auto"></audio>
+
+<script>
+(function(){
+  var enterBtn = document.getElementById('enter-btn');
+  var introScreen = document.getElementById('intro-screen');
+  var videoScreen = document.getElementById('video-screen');
+  var introVideo = document.getElementById('intro-video');
+  var holeTransition = document.getElementById('hole-transition');
+  var wallZoom = document.getElementById('wall-zoom');
+  var fogOverlay = document.getElementById('fog-overlay');
+  var mainPage = document.getElementById('main-page');
+  var bgm = document.getElementById('bgm');
+  var sectionIds = ['hero', 'about', 'skills', 'timeline', 'loadout', 'schedule', 'identity', 'facts', 'quote'];
+  var sectionSelect = document.getElementById('section-select');
+  var progressFill = document.getElementById('progress-fill');
+  var deckStatus = document.getElementById('deck-status');
+  var audioToggle = document.getElementById('audio-toggle');
+
+  (function checkIntroImage(){
+    var testImg = new Image();
+    testImg.onerror = function(){ introScreen.classList.add('img-missing'); };
+    testImg.src = 'intro.jpg';
+  })();
+
+  var started = false;
+
+  function goFullscreen(){
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (req) { try { req.call(el).catch(function(){}); } catch(e){} }
+  }
+
+  function startBGM(){
+    bgm.loop = true;
+    bgm.volume = 0.55;
+    var p = bgm.play();
+    if (p && p.catch) p.catch(function(){});
+  }
+
+  function showVideo(){
+    introScreen.style.display = 'none';
+    videoScreen.style.display = 'flex';
+    introVideo.currentTime = 0;
+    var p = introVideo.play();
+    if (p && p.catch) {
+      p.catch(function(){
+        introVideo.muted = true;
+        introVideo.play().catch(function(){});
+      });
+    }
+  }
+
+  function showWall(){
+    videoScreen.style.display = 'none';
+    holeTransition.style.display = 'block';
+    void wallZoom.offsetWidth;
+    wallZoom.classList.add('zooming');
+
+    setTimeout(function(){
+      fogOverlay.classList.add('show');
+    }, 1000);
+
+    setTimeout(function(){
+      revealMain();
+      holeTransition.classList.add('fade-out');
+      setTimeout(function(){
+        holeTransition.style.display = 'none';
+      }, 800);
+    }, 2300);
+  }
+
+  function revealMain(){
+    mainPage.style.display = 'block';
+    requestAnimationFrame(function(){ mainPage.classList.add('visible'); });
+    initScrollReveal();
+    updateDeck();
+  }
+
+  function scrollToSection(id){
+    var target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function updateDeck(){
+    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    var percent = maxScroll > 0 ? Math.round((window.scrollY / maxScroll) * 100) : 0;
+    progressFill.style.width = Math.min(100, percent) + '%';
+    deckStatus.textContent = 'ONLINE // ' + String(percent).padStart(2, '0') + '%';
+    var current = sectionIds[0];
+    sectionIds.forEach(function(id){
+      var section = document.getElementById(id);
+      if (section && section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = id;
+    });
+    sectionSelect.value = current;
+  }
+
+  function moveSection(direction){
+    var currentIndex = sectionIds.indexOf(sectionSelect.value);
+    var nextIndex = Math.max(0, Math.min(sectionIds.length - 1, currentIndex + direction));
+    sectionSelect.value = sectionIds[nextIndex];
+    scrollToSection(sectionIds[nextIndex]);
+  }
+
+  sectionSelect.addEventListener('change', function(){ scrollToSection(sectionSelect.value); });
+  document.getElementById('prev-btn').addEventListener('click', function(){ moveSection(-1); });
+  document.getElementById('next-btn').addEventListener('click', function(){ moveSection(1); });
+  document.getElementById('top-btn').addEventListener('click', function(){ scrollToSection('hero'); });
+  audioToggle.addEventListener('click', function(){
+    bgm.muted = !bgm.muted;
+    audioToggle.textContent = bgm.muted ? '♫̸' : '♫';
+    audioToggle.setAttribute('aria-label', bgm.muted ? 'Unmute background audio' : 'Mute background audio');
+  });
+  window.addEventListener('scroll', updateDeck, { passive:true });
+
+  enterBtn.addEventListener('click', function(){
+    if (started) return;
+    started = true;
+    enterBtn.disabled = true;
+
+    goFullscreen();
+    setTimeout(startBGM, 8000);
+
+    setTimeout(function(){
+      introScreen.classList.add('fade-out');
+      setTimeout(showVideo, 600);
+    }, 1000);
+  });
+
+  introVideo.addEventListener('ended', showWall);
+  introVideo.addEventListener('error', function(){ setTimeout(showWall, 400); });
+
+  function initScrollReveal(){
+    var targets = document.querySelectorAll('.reveal, .skill');
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) entry.target.classList.add('in-view');
+      });
+    }, { threshold: 0.3 });
+    targets.forEach(function(t){ io.observe(t); });
+  }
+})();
+</script>
+
+</body>
+</html>
